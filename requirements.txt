@@ -1,8 +1,5 @@
---index-url https://download.pytorch.org/whl/cu128
-torch
-torchvision
 safetensors
-compel
+compel<3.0
 pillow
 transformers
 diffusers
