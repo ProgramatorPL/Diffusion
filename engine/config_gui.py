@@ -8,7 +8,7 @@ class AppConfig:
     default_height: int = 1024
     default_steps: int = 25
     default_guidance: float = 5
-    default_scheduler: str = "Euler A"
+    default_scheduler: str = "Euler a"
     default_output: str = "output.jpg"
     max_image_size: tuple = (2048, 2048)
     preview_size: tuple = (400, 400)
