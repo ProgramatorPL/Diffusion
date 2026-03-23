@@ -3,18 +3,12 @@ from diffusers import (
     EulerAncestralDiscreteScheduler,
     DPMSolverMultistepScheduler,
     DPMSolverSinglestepScheduler,
-    LMSDiscreteScheduler,
-    DDIMScheduler,
-    PNDMScheduler,
-    DDPMScheduler,
-    HeunDiscreteScheduler,
     KDPM2DiscreteScheduler,
     KDPM2AncestralDiscreteScheduler,
-    ScoreSdeVeScheduler,
-    IPNDMScheduler,
-    KarrasVeScheduler,
-    VQDiffusionScheduler,
-    RePaintScheduler
+    HeunDiscreteScheduler,
+    LMSDiscreteScheduler,
+    DEISMultistepScheduler,
+    UniPCMultistepScheduler
 )
 
 from typing import Dict, Any
@@ -24,26 +18,7 @@ class SchedulerManager:
     """Manager do zarządzania schedulerami z obsługą V-Prediction (format A1111-WebUI)"""
 
     SCHEDULER_CONFIGS = {
-        # --- Euler ---
-        "Euler": {
-            "class": EulerDiscreteScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "Euler a": {
-            "class": EulerAncestralDiscreteScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-
-        # --- DPM++ ---
-        "DPM++ 2S a": {
-            "class": DPMSolverSinglestepScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "DPM++ 2S a Karras": {
-            "class": DPMSolverSinglestepScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5",
-            "kwargs": {"use_karras_sigmas": True}
-        },
+        # --- DPM++ 2M ---
         "DPM++ 2M": {
             "class": DPMSolverMultistepScheduler,
             "repo": "runwayml/stable-diffusion-v1-5"
@@ -62,6 +37,28 @@ class SchedulerManager:
             "class": DPMSolverMultistepScheduler,
             "repo": "runwayml/stable-diffusion-v1-5",
             "kwargs": {"use_karras_sigmas": True, "algorithm_type": "sde-dpmsolver++"}
+        },
+
+        # --- DPM++ 2S a ---
+        "DPM++ 2S a": {
+            "class": DPMSolverSinglestepScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5"
+        },
+        "DPM++ 2S a Karras": {
+            "class": DPMSolverSinglestepScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5",
+            "kwargs": {"use_karras_sigmas": True}
+        },
+
+        # --- DPM++ SDE ---
+        "DPM++ SDE": {
+            "class": DPMSolverSinglestepScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5"
+        },
+        "DPM++ SDE Karras": {
+            "class": DPMSolverSinglestepScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5",
+            "kwargs": {"use_karras_sigmas": True}
         },
 
         # --- DPM2 ---
@@ -84,6 +81,22 @@ class SchedulerManager:
             "kwargs": {"use_karras_sigmas": True}
         },
 
+        # --- Euler ---
+        "Euler": {
+            "class": EulerDiscreteScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5"
+        },
+        "Euler a": {
+            "class": EulerAncestralDiscreteScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5"
+        },
+
+        # --- Heun ---
+        "Heun": {
+            "class": HeunDiscreteScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5"
+        },
+
         # --- LMS ---
         "LMS": {
             "class": LMSDiscreteScheduler,
@@ -95,45 +108,13 @@ class SchedulerManager:
             "kwargs": {"use_karras_sigmas": True}
         },
 
-        # --- Heun ---
-        "Heun": {
-            "class": HeunDiscreteScheduler,
+        # --- Inne (Zgodnie ze zrzutami ekranu - Diffusers) ---
+        "DEIS": {
+            "class": DEISMultistepScheduler,
             "repo": "runwayml/stable-diffusion-v1-5"
         },
-
-        # --- Klasyczne (DDIM, DDPM, PNDM) ---
-        "DDIM": {
-            "class": DDIMScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "DDPM": {
-            "class": DDPMScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "PNDM": {
-            "class": PNDMScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        
-        # --- Inne / Rzadsze (domyślnie brak ustandaryzowanych nazw w A1111, ale zachowuję dla kompatybilności) ---
-        "iPNDM": {
-            "class": IPNDMScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "Stochastic Karras VE": {
-            "class": KarrasVeScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "Score SDE VE": {
-            "class": ScoreSdeVeScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "VQ Diffusion": {
-            "class": VQDiffusionScheduler,
-            "repo": "runwayml/stable-diffusion-v1-5"
-        },
-        "RePaint": {
-            "class": RePaintScheduler,
+        "UniPC": {
+            "class": UniPCMultistepScheduler,
             "repo": "runwayml/stable-diffusion-v1-5"
         }
     }
