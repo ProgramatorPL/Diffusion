@@ -1,6 +1,6 @@
 # AI Image Generation GUI
 
-![Main Window](assets/main-window.png)
+![Main Window](assets/main-window.PNG)
 
 Main Window
 
