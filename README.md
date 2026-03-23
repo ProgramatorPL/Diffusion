@@ -23,7 +23,7 @@ A lightweight Windows GUI for AI image generation with batch support, 1.5× upsc
 1. Install Git for Windows.
 2. Install Python 3.12. When installing, check the "Add Python to PATH" option. A user-level install is fine — admin privileges are not required.
 3. Clone this repository:
-   git clone https://github.com/ProgramatorPL/Diffusion.git
+   `git clone https://github.com/ProgramatorPL/Diffusion.git`
 4. Run `Install Requirements.bat` and wait for the setup to complete.
 5. Run `Launch.bat` to start the GUI.
 6. Enter your prompt, adjust settings, and click Generate.
