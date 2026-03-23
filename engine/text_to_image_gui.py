@@ -61,7 +61,8 @@ class StableDiffusionGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Stable Diffusion Text-to-Image Generator")
-        self.root.geometry("900x850")
+        self.root.geometry("1000x850")
+        self.root.minsize(850, 700) # Minimalny rozmiar okna
         self.root.configure(bg='#2b2b2b')
         
         self.txt2img_pipeline = None
@@ -86,6 +87,8 @@ class StableDiffusionGUI:
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('TFrame', background='#2b2b2b')
+        style.configure('TLabelframe', background='#2b2b2b', foreground='white')
+        style.configure('TLabelframe.Label', background='#2b2b2b', foreground='#87ceeb', font=('Segoe UI', 10, 'bold'))
         style.configure('TLabel', background='#2b2b2b', foreground='white')
         style.configure('TButton', background='#4a4a4a', foreground='white', borderwidth=1)
         style.map('TButton', background=[('active', '#5a5a5a')])
@@ -93,14 +96,18 @@ class StableDiffusionGUI:
         style.configure('TCombobox', fieldbackground='#3c3c3c', foreground='white')
         style.configure('TCheckbutton', background='#2b2b2b', foreground='white')
 
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
-        
+        # Główne wagi siatki dla okna
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        main_frame.columnconfigure(1, weight=1)
-        main_frame.rowconfigure(7, weight=1)
+
+        main_frame = ttk.Frame(self.root, padding="10")
+        main_frame.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
         
+        # Wagi dla głównego kontenera - sprawia, że okno reaguje na skalowanie
+        main_frame.columnconfigure(1, weight=1)
+        main_frame.rowconfigure(7, weight=1) # Galeria będzie się rozszerzać w pionie
+        
+        # --- Wybór modelu ---
         ttk.Label(main_frame, text="Model:").grid(row=0, column=0, sticky=tk.W, pady=5)
         model_frame = ttk.Frame(main_frame)
         model_frame.grid(row=0, column=1, columnspan=2, sticky=(tk.W, tk.E), padx=5, pady=5)
@@ -114,6 +121,7 @@ class StableDiffusionGUI:
         refresh_btn = ttk.Button(model_frame, text="⟳", width=3, command=self.scan_models)
         refresh_btn.grid(row=0, column=1, padx=5)
         
+        # --- Prompt ---
         ttk.Label(main_frame, text="Prompt:").grid(row=1, column=0, sticky=tk.W, pady=5)
         self.prompt_text = scrolledtext.ScrolledText(main_frame, height=3, width=50, bg='#3c3c3c', fg='white', insertbackground='white')
         self.prompt_text.grid(row=1, column=1, columnspan=2, sticky=(tk.W, tk.E), padx=5, pady=5)
@@ -124,39 +132,54 @@ class StableDiffusionGUI:
             ttk.Label(compel_info_frame, text="✓ Compel active.", foreground="lightgreen").pack(side=tk.LEFT, padx=(0, 10))
             ttk.Label(compel_info_frame, text="Use (word)++ to strengthen, [word] to weaken.", foreground="#888").pack(side=tk.LEFT)
         
+        # --- Negative Prompt ---
         ttk.Label(main_frame, text="Negative Prompt:").grid(row=3, column=0, sticky=tk.W, pady=5)
         self.negative_prompt_text = scrolledtext.ScrolledText(main_frame, height=2, width=50, bg='#3c3c3c', fg='white', insertbackground='white')
         self.negative_prompt_text.insert("1.0", "bad quality,worst quality,worst detail,sketch,censor,")
         self.negative_prompt_text.grid(row=3, column=1, columnspan=2, sticky=(tk.W, tk.E), padx=5, pady=5)
         
-        params_frame = ttk.Frame(main_frame)
+        # --- Parametry Generacji (Zgrupowane i skalowalne) ---
+        params_frame = ttk.LabelFrame(main_frame, text=" Generation Parameters ", padding="10 5")
         params_frame.grid(row=4, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=10)
         
-        ttk.Label(params_frame, text="Width:").grid(row=0, column=0, padx=5)
+        # Rozłożenie parametrów aby lepiej oddychały
+        for i in range(8):
+            params_frame.columnconfigure(i, weight=1 if i % 2 != 0 else 0)
+
+        ttk.Label(params_frame, text="Width:").grid(row=0, column=0, padx=5, sticky=tk.E)
         self.width_var = tk.IntVar(value=DEFAULT_CONFIG.default_width)
-        ttk.Spinbox(params_frame, from_=512, to=DEFAULT_CONFIG.max_image_size[0], increment=64, textvariable=self.width_var, width=8).grid(row=0, column=1, padx=5)
-        ttk.Label(params_frame, text="Height:").grid(row=0, column=2, padx=5)
-        self.height_var = tk.IntVar(value=DEFAULT_CONFIG.default_height)
-        ttk.Spinbox(params_frame, from_=512, to=DEFAULT_CONFIG.max_image_size[1], increment=64, textvariable=self.height_var, width=8).grid(row=0, column=3, padx=5)
-        ttk.Label(params_frame, text="Steps:").grid(row=0, column=4, padx=5)
-        self.steps_var = tk.IntVar(value=DEFAULT_CONFIG.default_steps)
-        ttk.Spinbox(params_frame, from_=1, to=100, textvariable=self.steps_var, width=8).grid(row=0, column=5, padx=5)
-        ttk.Label(params_frame, text="Guidance:").grid(row=0, column=6, padx=5)
-        self.guidance_var = tk.DoubleVar(value=DEFAULT_CONFIG.default_guidance)
-        ttk.Spinbox(params_frame, from_=1.0, to=20.0, increment=0.1, textvariable=self.guidance_var, width=8).grid(row=0, column=7, padx=5)
-        ttk.Label(params_frame, text="Seed:").grid(row=1, column=0, padx=5, pady=5)
-        self.seed_var = tk.StringVar()
-        ttk.Entry(params_frame, textvariable=self.seed_var, width=10).grid(row=1, column=1, padx=5, pady=5)
-        ttk.Label(params_frame, text="Scheduler:").grid(row=1, column=2, padx=5, pady=5)
-        self.scheduler_var = tk.StringVar(value=DEFAULT_CONFIG.default_scheduler)
-        scheduler_combo = ttk.Combobox(params_frame, textvariable=self.scheduler_var, values=SchedulerManager.get_available_schedulers(), width=10, state="readonly")
-        scheduler_combo.grid(row=1, column=3, padx=5, pady=5)
-        ttk.Label(params_frame, text="Batch:").grid(row=1, column=4, padx=5, pady=5)
-        self.batch_var = tk.IntVar(value=1)
-        ttk.Spinbox(params_frame, from_=1, to=20, textvariable=self.batch_var, width=8).grid(row=1, column=5, padx=5, pady=5)
-        self.v_prediction_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(params_frame, text="V-Prediction", variable=self.v_prediction_var).grid(row=1, column=6, columnspan=2, padx=5, pady=5)
+        ttk.Spinbox(params_frame, from_=512, to=DEFAULT_CONFIG.max_image_size[0], increment=64, textvariable=self.width_var, width=8).grid(row=0, column=1, padx=5, sticky=tk.W)
         
+        ttk.Label(params_frame, text="Height:").grid(row=0, column=2, padx=5, sticky=tk.E)
+        self.height_var = tk.IntVar(value=DEFAULT_CONFIG.default_height)
+        ttk.Spinbox(params_frame, from_=512, to=DEFAULT_CONFIG.max_image_size[1], increment=64, textvariable=self.height_var, width=8).grid(row=0, column=3, padx=5, sticky=tk.W)
+        
+        ttk.Label(params_frame, text="Steps:").grid(row=0, column=4, padx=5, sticky=tk.E)
+        self.steps_var = tk.IntVar(value=DEFAULT_CONFIG.default_steps)
+        ttk.Spinbox(params_frame, from_=1, to=100, textvariable=self.steps_var, width=8).grid(row=0, column=5, padx=5, sticky=tk.W)
+        
+        ttk.Label(params_frame, text="Guidance:").grid(row=0, column=6, padx=5, sticky=tk.E)
+        self.guidance_var = tk.DoubleVar(value=DEFAULT_CONFIG.default_guidance)
+        ttk.Spinbox(params_frame, from_=1.0, to=20.0, increment=0.1, textvariable=self.guidance_var, width=8).grid(row=0, column=7, padx=5, sticky=tk.W)
+        
+        ttk.Label(params_frame, text="Seed:").grid(row=1, column=0, padx=5, pady=10, sticky=tk.E)
+        self.seed_var = tk.StringVar()
+        ttk.Entry(params_frame, textvariable=self.seed_var, width=15).grid(row=1, column=1, padx=5, pady=10, sticky=tk.W)
+        
+        ttk.Label(params_frame, text="Scheduler:").grid(row=1, column=2, padx=5, pady=10, sticky=tk.E)
+        self.scheduler_var = tk.StringVar(value=DEFAULT_CONFIG.default_scheduler)
+        # Zwiększona szerokość z 10 na 25, aby pomieścić długie nazwy z DPM++
+        scheduler_combo = ttk.Combobox(params_frame, textvariable=self.scheduler_var, values=SchedulerManager.get_available_schedulers(), width=25, state="readonly")
+        scheduler_combo.grid(row=1, column=3, padx=5, pady=10, sticky=tk.W)
+        
+        ttk.Label(params_frame, text="Batch:").grid(row=1, column=4, padx=5, pady=10, sticky=tk.E)
+        self.batch_var = tk.IntVar(value=1)
+        ttk.Spinbox(params_frame, from_=1, to=20, textvariable=self.batch_var, width=8).grid(row=1, column=5, padx=5, pady=10, sticky=tk.W)
+        
+        self.v_prediction_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(params_frame, text="V-Prediction", variable=self.v_prediction_var).grid(row=1, column=6, columnspan=2, padx=5, pady=10, sticky=tk.W)
+        
+        # --- Przyciski ---
         buttons_frame = ttk.Frame(main_frame)
         buttons_frame.grid(row=5, column=0, columnspan=3, pady=10)
         self.generate_btn = ttk.Button(buttons_frame, text="Generate", command=self.start_generation_thread)
@@ -164,6 +187,7 @@ class StableDiffusionGUI:
         self.stop_btn = ttk.Button(buttons_frame, text="Stop", command=self.stop_generation, state='disabled')
         self.stop_btn.grid(row=0, column=1, padx=5)
         
+        # --- Pasek Postępu ---
         progress_frame = ttk.Frame(main_frame)
         progress_frame.grid(row=6, column=0, columnspan=3, sticky=(tk.W, tk.E), padx=5, pady=5)
         progress_frame.columnconfigure(0, weight=1)
@@ -172,12 +196,13 @@ class StableDiffusionGUI:
         self.progress_var = tk.StringVar(value="Ready")
         ttk.Label(progress_frame, textvariable=self.progress_var, foreground="lightblue").grid(row=1, column=0, pady=(5, 0))
         
+        # --- Galeria Obrazów ---
         gallery_frame = ttk.Frame(main_frame)
-        gallery_frame.grid(row=7, column=0, columnspan=3, sticky="nsew", pady=10)
+        gallery_frame.grid(row=7, column=0, columnspan=3, sticky=(tk.N, tk.S, tk.E, tk.W), pady=10)
         gallery_frame.rowconfigure(0, weight=1)
         gallery_frame.columnconfigure(0, weight=1)
         self.canvas = tk.Canvas(gallery_frame, bg="#2b2b2b", highlightthickness=0)
-        self.canvas.grid(row=0, column=0, sticky="nsew")
+        self.canvas.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
         scrollbar = ttk.Scrollbar(gallery_frame, orient="horizontal", command=self.canvas.xview)
         scrollbar.grid(row=1, column=0, sticky="ew")
         self.canvas.configure(xscrollcommand=scrollbar.set)
@@ -185,6 +210,7 @@ class StableDiffusionGUI:
         self.canvas.create_window((0, 0), window=self.image_container, anchor="nw")
         self.image_container.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         
+        # --- Pasek Stanu ---
         status_frame = ttk.Frame(main_frame)
         status_frame.grid(row=8, column=0, columnspan=3, sticky=(tk.W, tk.E), pady=5)
         status_frame.columnconfigure(0, weight=1)
