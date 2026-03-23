@@ -126,7 +126,7 @@ class StableDiffusionGUI:
         
         ttk.Label(main_frame, text="Negative Prompt:").grid(row=3, column=0, sticky=tk.W, pady=5)
         self.negative_prompt_text = scrolledtext.ScrolledText(main_frame, height=2, width=50, bg='#3c3c3c', fg='white', insertbackground='white')
-        self.negative_prompt_text.insert("1.0", "low quality, blurry, distorted, bad anatomy, bad hands, multiple views, multiple panels")
+        self.negative_prompt_text.insert("1.0", "bad quality,worst quality,worst detail,sketch,censor,")
         self.negative_prompt_text.grid(row=3, column=1, columnspan=2, sticky=(tk.W, tk.E), padx=5, pady=5)
         
         params_frame = ttk.Frame(main_frame)
