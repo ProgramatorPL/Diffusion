@@ -2,5 +2,5 @@ safetensors
 compel<3.0
 pillow
 transformers
-diffusers
+diffusers[torch]
 accelerate
