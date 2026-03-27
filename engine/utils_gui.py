@@ -47,14 +47,14 @@ def generate_output_filename(prompt: str, seed: Optional[int] = None) -> str:
     prompt_hash = hashlib.md5(prompt.encode()).hexdigest()[:8]
     
     if seed is not None:
-        return f"sd_generation_{prompt_hash}_{seed}.jpg"
+        return f"sd_generation_{prompt_hash}_{seed}.png"
     else:
-        return f"sd_generation_{prompt_hash}.jpg"
+        return f"sd_generation_{prompt_hash}.png"
 
-def ensure_jpg_extension(filename: str) -> str:
-    """Upewnia się, że nazwa pliku ma rozszerzenie .jpg"""
-    if not filename.lower().endswith('.jpg') and not filename.lower().endswith('.jpeg'):
-        return filename + '.jpg'
+def ensure_png_extension(filename: str) -> str:
+    """Upewnia się, że nazwa pliku ma rozszerzenie .png"""
+    if not filename.lower().endswith('.png') and not filename.lower().endswith('.png'):
+        return filename + '.png'
     return filename
 
 def cleanup_memory():

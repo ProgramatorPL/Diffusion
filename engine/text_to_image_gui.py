@@ -271,9 +271,9 @@ class StableDiffusionGUI:
                 dtype=self.torch_dtype
             )
 
-            output_path = output_manager.get_next_output_path()
-            image_with_metadata = MetadataWriter.add_metadata_to_image(new_image, new_metadata)
-            image_with_metadata.save(output_path, "JPEG", quality=95, exif=image_with_metadata.info.get("exif", b''))
+            output_path = output_manager.get_next_output_path(extension="png")
+            image_with_metadata, png_info = MetadataWriter.add_metadata_to_image(new_image, new_metadata)
+            image_with_metadata.save(output_path, format="PNG", pnginfo=png_info)
             self.add_image_to_gallery(new_image, new_metadata)
             self.output_info_var.set(f"Zapisano: {os.path.basename(output_path)}")
             self.progress['value'] = 100
@@ -337,9 +337,15 @@ class StableDiffusionGUI:
                 )
                 
                 metadata = MetadataWriter.create_metadata(prompt=prompt, negative_prompt=negative_prompt, width=self.width_var.get(), height=self.height_var.get(), steps=self.steps_var.get(), guidance_scale=self.guidance_var.get(), seed=current_seed, scheduler=self.scheduler_var.get(), model_name=model_name, v_prediction=self.v_prediction_var.get(), batch_index=i if batch_size > 1 else None)
-                image_with_metadata = MetadataWriter.add_metadata_to_image(image, metadata)
-                output_path = output_manager.get_next_output_path()
-                image_with_metadata.save(output_path, "JPEG", quality=95, exif=image_with_metadata.info.get("exif", b''))
+                
+                # Odbieramy teraz krotkę: obraz oraz obiekt PngInfo
+                image_with_metadata, png_info = MetadataWriter.add_metadata_to_image(image, metadata)
+                
+                # Wymuszamy format PNG w ścieżce
+                output_path = output_manager.get_next_output_path(extension="png")
+                
+                # Zapisujemy jako PNG z podaniem pnginfo
+                image_with_metadata.save(output_path, format="PNG", pnginfo=png_info)
                 self.add_image_to_gallery(image, metadata)
                 self.output_info_var.set(f"Zapisano: {os.path.basename(output_path)}")
             total_time = time.time() - start_time

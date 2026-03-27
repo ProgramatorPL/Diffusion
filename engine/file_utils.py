@@ -21,11 +21,11 @@ class OutputManager:
         """Zwraca początkowy licznik na podstawie istniejących plików"""
         today_dir = self.get_today_directory()
         if os.path.exists(today_dir):
-            jpg_files = [f for f in os.listdir(today_dir) if f.endswith('.jpg')]
-            if jpg_files:
+            png_files = [f for f in os.listdir(today_dir) if f.endswith('.png')]
+            if png_files:
                 # Znajdź najwyższy numer
                 numbers = []
-                for file in jpg_files:
+                for file in png_files:
                     try:
                         num = int(file.split('-')[0])
                         numbers.append(num)
@@ -41,13 +41,13 @@ class OutputManager:
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
     
-    def generate_filename(self, extension: str = "jpg") -> str:
+    def generate_filename(self, extension: str = "png") -> str:
         """Generuje unikalną nazwę pliku"""
         self.generation_counter += 1
         random_hash = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
         return f"{self.generation_counter:04d}-{random_hash}.{extension}"
     
-    def get_next_output_path(self, extension: str = "jpg") -> str:
+    def get_next_output_path(self, extension: str = "png") -> str:
         """Zwraca pełną ścieżkę do następnego pliku wyjściowego"""
         output_dir = self.get_today_directory()
         filename = self.generate_filename(extension)
