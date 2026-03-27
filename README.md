@@ -4,7 +4,7 @@
 
 Main Window
 
-A lightweight Windows GUI for AI image generation with batch support, 1.5× upscaling, and variety control. Coded with Google Gemini 2.5 Pro.
+A lightweight Windows GUI for AI image generation with batch support, 1.5× upscaling, and variety control. Coded with Google Gemini Pro.
 
 ## Features
 - Batch image generation
