@@ -90,6 +90,11 @@ class SchedulerManager:
             "class": EulerAncestralDiscreteScheduler,
             "repo": "runwayml/stable-diffusion-v1-5"
         },
+        "Euler a Karras": {
+            "class": EulerAncestralDiscreteScheduler,
+            "repo": "runwayml/stable-diffusion-v1-5",
+            "kwargs": {"use_karras_sigmas": True}
+        },
 
         # --- Heun ---
         "Heun": {
