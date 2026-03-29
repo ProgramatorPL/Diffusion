@@ -166,7 +166,7 @@ class StableDiffusionGUI:
         self.seed_var = tk.StringVar()
         ttk.Entry(params_frame, textvariable=self.seed_var, width=15).grid(row=1, column=1, padx=5, pady=10, sticky=tk.W)
         
-        ttk.Label(params_frame, text="Scheduler:").grid(row=1, column=2, padx=5, pady=10, sticky=tk.E)
+        ttk.Label(params_frame, text="Sampler:").grid(row=1, column=2, padx=5, pady=10, sticky=tk.E)
         self.scheduler_var = tk.StringVar(value=DEFAULT_CONFIG.default_scheduler)
         # Zwiększona szerokość z 10 na 25, aby pomieścić długie nazwy z DPM++
         scheduler_combo = ttk.Combobox(params_frame, textvariable=self.scheduler_var, values=SchedulerManager.get_available_schedulers(), width=25, state="readonly")
