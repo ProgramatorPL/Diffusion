@@ -319,7 +319,9 @@ class StableDiffusionGUI:
                 self.progress_var.set(f"Generowanie obrazu {i+1}/{batch_size}...")
                 self.root.update_idletasks()
                 current_seed = base_seed + i
-                
+                # Ustawienia działające "pod maską" dla SDXL
+                auto_clip_skip = 2 if self.is_sdxl else 1
+                auto_cfg_rescale = 0.7 if self.is_sdxl else 0.0
                 # Delegowanie zadania do silnika T2I
                 image = self.t2i_engine.generate(
                     pipeline=self.txt2img_pipeline,
@@ -333,11 +335,27 @@ class StableDiffusionGUI:
                     guidance=self.guidance_var.get(),
                     seed=current_seed,
                     device=self.device,
-                    dtype=self.torch_dtype
+                    dtype=self.torch_dtype,
+                    clip_skip=auto_clip_skip,
+                    cfg_rescale=auto_cfg_rescale
                 )
                 
-                metadata = MetadataWriter.create_metadata(prompt=prompt, negative_prompt=negative_prompt, width=self.width_var.get(), height=self.height_var.get(), steps=self.steps_var.get(), guidance_scale=self.guidance_var.get(), seed=current_seed, scheduler=self.scheduler_var.get(), model_name=model_name, v_prediction=self.v_prediction_var.get(), batch_index=i if batch_size > 1 else None)
-                
+                # Zapis metadanych i obrazka w standardzie CivitAI (PNG)
+                metadata = MetadataWriter.create_metadata(
+                    prompt=prompt,
+                    negative_prompt=negative_prompt,
+                    width=self.width_var.get(),
+                    height=self.height_var.get(),
+                    steps=self.steps_var.get(),
+                    guidance_scale=self.guidance_var.get(),
+                    seed=current_seed,
+                    scheduler=self.scheduler_var.get(),
+                    model_name=model_name,
+                    v_prediction=self.v_prediction_var.get(),
+                    clip_skip=auto_clip_skip,
+                    cfg_rescale=auto_cfg_rescale,
+                    batch_index=i if batch_size > 1 else None
+                )                
                 # Odbieramy teraz krotkę: obraz oraz obiekt PngInfo
                 image_with_metadata, png_info = MetadataWriter.add_metadata_to_image(image, metadata)
                 

@@ -6,8 +6,8 @@ class AppConfig:
     """Konfiguracja aplikacji GUI"""
     default_width: int = 1024
     default_height: int = 1024
-    default_steps: int = 20
-    default_guidance: float = 5
+    default_steps: int = 25
+    default_guidance: float = 7.5
     default_scheduler: str = "Euler a"
     default_output: str = "output.png"
     max_image_size: tuple = (2048, 2048)

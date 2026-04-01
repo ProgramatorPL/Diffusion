@@ -25,6 +25,8 @@ class MetadataWriter:
                        scheduler: str,
                        model_name: str,
                        v_prediction: bool,
+                       clip_skip: int = 1,
+                       cfg_rescale: float = 0.0,
                        batch_index: Optional[int] = None) -> Dict[str, Any]:
         
         metadata = {
@@ -37,6 +39,8 @@ class MetadataWriter:
             'sampler': scheduler,
             'model': model_name,
             'v_prediction': v_prediction,
+            'clip_skip': clip_skip,
+            'cfg_rescale': cfg_rescale,
             'generation_date': datetime.now().isoformat(),
             'software': 'StableDiffusionGUI',
             'device': 'CUDA' if torch.cuda.is_available() else 'CPU'
@@ -65,16 +69,21 @@ class MetadataWriter:
             f"Model: {metadata.get('model', 'N/A').split('.')[0]}" 
         ]
         
-        # Kluczowe dla CivitAI: jeśli wykryjemy operację i2i, dodajemy Denoising strength
+        # Opcje pod maską dla SDXL
+        if metadata.get('clip_skip', 1) > 1:
+            settings.append(f"Clip skip: {metadata.get('clip_skip')}")
+            
+        if metadata.get('cfg_rescale', 0.0) > 0.0:
+            settings.append(f"Guidance rescale: {metadata.get('cfg_rescale')}")
+        
+        # Parametr dla trybów i2i (Upscale/Variation)
         if 'variation_strength' in metadata:
             settings.append(f"Denoising strength: {metadata.get('variation_strength')}")
         elif 'upscale_factor' in metadata:
-            # W pliku engine_i2i.py masz ustawione strength na 0.4 dla trybu upscale
             settings.append("Denoising strength: 0.4")
             
         settings_str = ", ".join(settings)
         
-        # Jeśli nie ma negative promptu, pomijamy jego linijkę, żeby struktura była czysta
         if metadata.get('negative_prompt', '').strip():
             return f"{prompt_str}\n{negative_prompt_str}\n{settings_str}"
         else:
@@ -83,27 +92,21 @@ class MetadataWriter:
     @classmethod
     def add_metadata_to_image(cls, image: Image.Image, metadata: Dict[str, Any]) -> tuple[Image.Image, PngInfo]:
         """
-        Zwraca krotkę (obraz_z_exif, obiekt_png_info). 
-        Obiekt PngInfo zawiera dane w formacie 'parameters' (wymagane przez CivitAI dla plików PNG).
+        Zwraca krotkę (obraz_z_exif, obiekt_png_info).
         """
         image_with_exif = image.copy()
         civitai_string = cls.metadata_to_civitai_string(metadata)
         json_string = json.dumps(metadata, ensure_ascii=False)
 
-        # 1. Format PNG (Standard dla WebUI i CivitAI)
         png_info = PngInfo()
-        png_info.add_text("parameters", civitai_string) # Magiczny klucz 'parameters'
-        png_info.add_text("Workflow", json_string)      # Opcjonalnie przechowuj surowy JSON 
+        png_info.add_text("parameters", civitai_string) 
+        png_info.add_text("Workflow", json_string)      
 
-        # 2. Format EXIF (Awaryjnie / Dla formatu JPEG)
         try:
             exif_data = image_with_exif.getexif()
-
-            # A1111 często zapisuje UserComment z prefiksem UNICODE
             comment_bytes = b"UNICODE\x00" + civitai_string.encode('utf-8')
             exif_data[cls.EXIF_TAGS['user_comment']] = comment_bytes
             exif_data[cls.EXIF_TAGS['image_description']] = json_string
-
             image_with_exif.info["exif"] = exif_data.tobytes()
         except Exception as e:
             print(f"Warning: Could not write EXIF data. Error: {e}")
