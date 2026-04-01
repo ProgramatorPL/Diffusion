@@ -10,6 +10,8 @@ A lightweight Windows GUI for AI image generation with batch support, 1.5× upsc
 - Batch image generation
 - Upscaling (1.5×)
 - Variety control (Strength:0.55)
+- Automatic CFG rescale for SDXL models (0.7 strenght)
+- Automatic CLIP SKIP 2 for SDXL models
 - Filename-based model autodetection (SDXL, v-pred)
 - Simple one-click start scripts for Windows
 
